@@ -1,0 +1,10 @@
+apiVersion: crdb.cockroachlabs.com/v1alpha1
+kind: CrdbCluster
+metadata:
+  name: crdb-example
+spec:
+  dataStore:
+    emptyDir: {}
+  image:
+    name: "cockroachdb/cockroach-unstable:v20.1.0"
+  nodes: 1
