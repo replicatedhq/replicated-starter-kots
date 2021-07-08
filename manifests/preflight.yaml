@@ -59,7 +59,7 @@ spec:
           - fail:
               when: "sum(cpuCapacity) < 2"
               message: The cluster must contain at least 2 cores
-          - fail:
+          - warn:
               when: "sum(cpuCapacity) < 4"
               message: The cluster must contain at least 4 cores
           - pass:
