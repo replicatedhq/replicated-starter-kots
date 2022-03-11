@@ -29,6 +29,21 @@ brew install replicatedhq/replicated/cli
 
 ##### Manual
 
+###### Linux
+
+```shell script
+curl -s https://api.github.com/repos/replicatedhq/replicated/releases/latest \
+           | grep "browser_download_url.*$(uname | tr '[:upper:]' '[:lower:]')_amd64.tar.gz" \
+           | cut -d : -f 2,3 \
+           | tr -d \" \
+           | cat <( echo -n "url") - \
+           | curl -fsSL -K- \
+           | tar xvz replicated
+```
+
+##### Mac
+
+
 ```shell script
 curl -s https://api.github.com/repos/replicatedhq/replicated/releases/latest \
            | grep "browser_download_url.*$(uname | tr '[:upper:]' '[:lower:]')_all.tar.gz" \
@@ -38,6 +53,7 @@ curl -s https://api.github.com/repos/replicatedhq/replicated/releases/latest \
            | curl -fsSL -K- \
            | tar xvz replicated
 ```
+
 Then move `./replicated` to somewhere in your `PATH`:
 
 
