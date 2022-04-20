@@ -7,6 +7,7 @@ on:
     - '!**.md'
     - '!doc/**'
     - '!**.png'
+    - '!.github/**' # this isn't always ideal but we gotta stop running on every workflow or issue template update, burns too many actions
 
 jobs:
   create-release:
