@@ -14,7 +14,7 @@ data:
       </head>
       <body>
         Hello from KOTS.
-        <p>This is text from a user config value: '{{repl ConfigOption "example_defult_value"}}' </p>
+        <p>This is text from a user config value: '{{repl ConfigOption "example_default_value"}}' </p>
         </br>
         This is a hidden value:
         </br>

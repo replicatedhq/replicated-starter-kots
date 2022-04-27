@@ -15,7 +15,7 @@ spec:
       type: bool
       default: "0"
       recommended: true
-    - name: example_defult_value
+    - name: example_default_value
       title: Text Example (with default value)
       type: text
       value: ""
