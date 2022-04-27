@@ -1,3 +1,4 @@
+---
 apiVersion: kurl.sh/v1beta1
 kind: Installer
 metadata:

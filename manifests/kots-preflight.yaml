@@ -1,3 +1,4 @@
+---
 apiVersion: troubleshoot.sh/v1beta2
 kind: Preflight
 metadata:
@@ -19,10 +20,10 @@ spec:
     - containerRuntime:
         outcomes:
           - pass:
-              when: "== docker"
+              when: "== containerd"
               message: Docker container runtime was found.
           - fail:
-              message: Did not find Docker container runtime.
+              message: Did not find containerd container runtime.
     - distribution:
         checkName: Check Kubernetes environment.
         outcomes:
