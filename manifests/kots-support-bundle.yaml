@@ -1,8 +1,8 @@
 ---
-apiVersion: troubleshoot.replicated.com/v1beta1
+apiVersion: troubleshoot.sh/v1beta2
 kind: SupportBundle
 metadata:
-  name: support-sample
+  name: example-support-bundle
 spec:
   collectors:
     - clusterInfo: {}
@@ -13,5 +13,5 @@ spec:
           - component=nginx
         namespace: '{{repl Namespace }}'
         limits:
-          maxAge: 720h
+          maxAge: 30d
           maxLines: 10000
