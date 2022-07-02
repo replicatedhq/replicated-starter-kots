@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/stale@v4
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN}}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
           operations-per-run: 150
           days-before-stale: 4
           days-before-close: 2
@@ -20,4 +20,21 @@ jobs:
           close-issue-label: 'status::closed'
           any-of-labels: 'status::pending,status::inactive,status::stale'
           only-labels: 'kind::inbound-escalation'
+          debug-only: false
+
+  stale-enhancements:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v4
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          operations-per-run: 150
+          days-before-stale: 14
+          days-before-close: 7
+          stale-issue-message: 'This enhancement has been delivered by our product team and we are waiting for your feedback. We will archive this enhancement tracking issue as accepted if we don’t hear from you in 7 days.'
+          close-issue-message: 'We haven’t heard back and are optimistic that indicates this enhancement is working as expected. As such, we will close this case today to increase visibility of active issues. If you are unable to validate this enhancement, please let us know by commenting and pressing the re-open button.'
+          stale-issue-label: 'enhancements::inactive'
+          close-issue-label: 'enhancements::done'
+          any-of-labels: 'kind::feature-request,kind::bug'
+          only-labels: 'enhancements::awaiting-confirmation'
           debug-only: false
