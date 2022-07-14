@@ -1,24 +1,22 @@
 ---
-apiVersion: kurl.sh/v1beta1
-kind: Installer
-metadata:
-  name: 'myapp'
-spec:
-  kubernetes:
-    version: latest
-  containerd:
-    version: latest
-  weave:
-    version: latest
-  minio:
-    version: latest
-  longhorn:
-    version: latest
-  registry:
-    version: latest
-  prometheus:
-    version: latest
-  kotsadm:
-    version: latest
-  ekco:
-    version: latest
+apiVersion: "cluster.kurl.sh/v1beta1"
+kind: "Installer"
+metadata: 
+  name: "f4f198d"
+spec: 
+  kubernetes: 
+    version: "1.23.x"
+  weave: 
+    version: "2.6.x"
+  prometheus: 
+    version: "0.57.x"
+  registry: 
+    version: "2.8.x"
+  containerd: 
+    version: "1.5.x"
+  ekco: 
+    version: "latest"
+  minio: 
+    version: "2022-07-06T20-29-49Z"
+  longhorn: 
+    version: "latest"
