@@ -1,8 +1,7 @@
----
 apiVersion: troubleshoot.sh/v1beta2
 kind: Preflight
 metadata:
-  name: example-preflight-checks
+  name: preflight-checks
 spec:
   analyzers:
     - clusterVersion:
@@ -25,35 +24,34 @@ spec:
           - fail:
               message: Did not find containerd container runtime.
     - distribution:
-        checkName: Check Kubernetes environment.
         outcomes:
           - fail:
               when: "== docker-desktop"
-              message: The application does not support Docker Desktop Clusters
+              message: The application does not support Docker Desktop clusters.
           - fail:
               when: "== microk8s"
-              message: The application does not support Microk8s Clusters
+              message: The application does not support MicroK8s clusters.
           - fail:
               when: "== minikube"
-              message: The application does not support Minikube Clusters
+              message: The application does not support minikube clusters.
           - pass:
               when: "== eks"
-              message: EKS is a supported distribution
+              message: EKS is a supported distribution.
           - pass:
               when: "== gke"
-              message: GKE is a supported distribution
+              message: GKE is a supported distribution.
           - pass:
               when: "== aks"
-              message: AKS is a supported distribution
+              message: AKS is a supported distribution.
           # Will be supported in the future
           - pass:
               when: "== kurl"
-              message: KURL is a supported distribution
+              message: kURL is a supported distribution.
           - pass:
               when: "== digitalocean"
-              message: DigitalOcean is a supported distribution
+              message: DigitalOcean is a supported distribution.
           - warn:
-              message: Unable to determine the distribution of Kubernetes
+              message: Unable to determine the distribution of Kubernetes.
     - nodeResources:
         checkName: Total CPU Cores
         outcomes:
