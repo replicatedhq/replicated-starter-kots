@@ -5,7 +5,7 @@ metadata:
   name: 'myapp'
 spec:
   kubernetes:
-    version: 1.25.x
+    version: 1.26.x
   containerd:
     version: latest
   weave:
