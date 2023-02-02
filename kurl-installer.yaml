@@ -8,7 +8,7 @@ spec:
     version: 1.26.x
   containerd:
     version: latest
-  weave:
+  flannel:
     version: latest
   registry:
     version: latest
