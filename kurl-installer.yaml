@@ -32,4 +32,4 @@ spec:
   openebs:
     version: latest
     isLocalPVEnabled: true
-    localPVStorageClassName: default
+    localPVStorageClassName: local
