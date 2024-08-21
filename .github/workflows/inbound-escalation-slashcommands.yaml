@@ -8,18 +8,45 @@ jobs:
   process_labels_v2:
     runs-on: ubuntu-latest
     name: Slash Command
+    
     steps:
       # To use this repository's private action,
       # you must check out the repository
       - name: Checkout
-        uses: actions/checkout@v3
-      - name: Copy Slash Command
-        run: cp -r .github/workflows/slash-command ./
+        uses: actions/checkout@v4
+      - name: Check for Open Command
+        uses: replicated-collab/ce-automation-app/config/files/.github/workflows/slash-command@main
+        id: open_command
+        with:
+          command: open
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          allowVendor: false
       - name: Check for Call Command
-        uses: ./slash-command # Uses an action in the root directory
-        id: command
+        uses: replicated-collab/ce-automation-app/config/files/.github/workflows/slash-command@main
+        id: call_command
         with:
           command: call
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          allowVendor: false
+      - name: Check for Pending Command
+        uses: replicated-collab/ce-automation-app/config/files/.github/workflows/slash-command@main
+        id: pending_command
+        with:
+          command: pending
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          allowVendor: false
+      - name: Check for Confirmation Command
+        uses: replicated-collab/ce-automation-app/config/files/.github/workflows/slash-command@main
+        id: confirmation_command
+        with:
+          command: confirmation
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          allowVendor: false
+      - name: Check for Close Command
+        uses: replicated-collab/ce-automation-app/config/files/.github/workflows/slash-command@main
+        id: close_command
+        with:
+          command: close
           github-token: ${{secrets.GITHUB_TOKEN}}
           allowVendor: false
 
@@ -40,6 +67,7 @@ jobs:
 
             core.info(context);
             console.log(context);
+            core.info("starting repo check");
             try {
               const membership = await github.rest.orgs.checkPublicMembershipForUser({
                 org: "replicatedhq",
@@ -167,13 +195,17 @@ jobs:
               });
             }
   process_labels:
-    name: Apply labels from Slash Commands in Issue Comment
+    name: Check if the issue is reopened and remove status labels
     runs-on: ubuntu-latest
     steps:
       - uses: actions/github-script@v6
         if: |
-          contains(github.event.issue.labels.*.name, 'inbound-escalation')
-          && ! contains(github.event.comment.user.login, 'replicated-collab-bot')
+          contains(github.event.issue.labels.*.name, 'kind::inbound-escalation') &&
+          (
+            !contains(github.event.comment.user.login, 'replicated-collab-bot') ||
+            (contains(github.event.comment.user.login, 'replicated-collab-bot') &&
+            contains(github.event.comment.body, 'Analysis for support bundle completed.'))
+          )
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
@@ -217,54 +249,6 @@ jobs:
                 }
               }
             }
-            else {
-              core.info("Commenter is a public member of replicatedhq processing slash commands")
-              if (context.payload.comment.body.indexOf("/open") !== -1) {
-                core.info("Adding label Open");
-                await removeStatusLabels(context, github, core);
-                await github.rest.issues.addLabels({
-                  owner: context.payload.repository.owner.login,
-                  repo: context.payload.repository.name,
-                  issue_number: context.payload.issue.number,
-                  labels: ['status::open'],
-                })
-              } else if (context.payload.comment.body.indexOf("/close") !== -1) {
-                core.info("Adding label Closed");
-                await removeStatusLabels(context, github, core);
-                await github.rest.issues.addLabels({
-                  owner: context.payload.repository.owner.login,
-                  repo: context.payload.repository.name,
-                  issue_number: context.payload.issue.number,
-                  labels: ['status::closed'],
-                })
-                /* Add this in once the other script is not processing slash commands
-                await github.rest.issues.update({
-                  owner, repo,
-                  issue_number: context.payload.issue.number,
-                  state: "closed",
-                  state_reason: "completed"
-                });
-                */
-              } else if (context.payload.comment.body.indexOf("/pending") !== -1) {
-                core.info("Adding label Pending");
-                await removeStatusLabels(context, github, core);
-                await github.rest.issues.addLabels({
-                  owner: context.payload.repository.owner.login,
-                  repo: context.payload.repository.name,
-                  issue_number: context.payload.issue.number,
-                  labels: ['status::pending'],
-                })
-              } else if (context.payload.comment.body.indexOf("/confirmation") !== -1) {
-                core.info("Adding label awaiting-confirmation");
-                await removeStatusLabels(context, github, core);
-                await github.rest.issues.addLabels({
-                  owner: context.payload.repository.owner.login,
-                  repo: context.payload.repository.name,
-                  issue_number: context.payload.issue.number,
-                  labels: ['status::awaiting-confirmation'],
-                })
-              }
-            }
 
             async function removeStatusLabels() {
               try {
@@ -306,5 +290,15 @@ jobs:
                 })
               } catch (e) {
                 core.info("Couldn't remove status::awaiting-confirmation")
+              }
+              try {
+                await github.rest.issues.removeLabel({
+                  owner: context.payload.repository.owner.login,
+                  repo: context.payload.repository.name,
+                  issue_number: context.payload.issue.number,
+                  name: 'status::inactive',
+                })
+              } catch (e) {
+                core.info("Couldn't remove status::inactive")
               }
             }
