@@ -9,7 +9,7 @@ jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v8
+      - uses: actions/stale@v9
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           operations-per-run: 150
@@ -27,7 +27,7 @@ jobs:
   confirmation:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v8
+      - uses: actions/stale@v9
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           operations-per-run: 150
@@ -44,13 +44,13 @@ jobs:
   stale-enhancements:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v8
+      - uses: actions/stale@v9
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           operations-per-run: 150
-          days-before-stale: 14
-          days-before-close: 7
-          stale-issue-message: "This enhancement (or a workaround/alternative solution) has been delivered by our team and we are waiting for your feedback. We will archive this enhancement tracking issue as accepted if we don’t hear from you in 7 days."
+          days-before-stale: 0
+          days-before-close: 2
+          stale-issue-message: "This enhancement (or a workaround/alternative solution) has been delivered by our team and we are waiting for your feedback. We will archive this enhancement tracking issue as accepted if we don’t hear from you in 2 days."
           close-issue-message: "We haven’t heard back and are optimistic that indicates a solution has been delivered and is working as expected. As such, we will close this case today to increase visibility of active issues. If you are unable to validate this enhancement, please let us know by commenting and pressing the re-open button."
           stale-issue-label: "enhancements::inactive"
           close-issue-label: "enhancements::done"
