@@ -1,0 +1,5 @@
+brew "helm"
+brew "yq"
+brew "jq"
+brew "shellcheck"
+brew "editorconfig-checker"

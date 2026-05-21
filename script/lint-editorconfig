@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+echo "Running editorconfig checks..."
+
+if command -v editorconfig-checker >/dev/null 2>&1; then
+  editorconfig-checker "${PROJECT_ROOT}"
+elif command -v eclint >/dev/null 2>&1; then
+  eclint "${PROJECT_ROOT}"
+else
+  echo "editorconfig-checker not found. Skipping."
+  echo "Install via: brew install editorconfig-checker"
+  exit 0
+fi
+
+echo "EditorConfig checks passed."

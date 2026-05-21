@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+echo "Running shellcheck on shell scripts..."
+
+find "${PROJECT_ROOT}/bin" "${PROJECT_ROOT}/script" -type f | while read -r script; do
+  if head -1 "$script" | grep -qE '^#!(/usr)?/bin/(bash|sh)'; then
+    echo "Checking: $script"
+    shellcheck "$script"
+  fi
+done
+
+echo "Shellcheck passed."
