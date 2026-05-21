@@ -3,46 +3,82 @@ name: Release
 on:
   workflow_dispatch:
     inputs:
-      channel:
-        description: 'Channel to promote release to'
+      version:
+        description: Release Version
         required: true
-        default: 'Unstable'
         type: string
-  push:
-    branches:
-      - main
+      channel:
+        description: Channel to promote
+        required: true
+        default: Unstable
+        type: string
+      slug:
+        description: Replicated App Slug
+        required: false
+        type: string
+      api-endpoint:
+        description: Replicated API Endpoint
+        required: false
+        type: string
+      api-token:
+        description: Replicated API Token
+        required: false
+        type: string
+
+env:
+  CHART_NAME: app
 
 jobs:
-  create-release:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' || vars.ENABLE_AUTO_RELEASE == 'true'
+  release:
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up environment
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.15.0
+
+      - name: Package Helm chart
         run: |
-          echo "REPLICATED_APP=${{ secrets.REPLICATED_APP }}" >> $GITHUB_ENV
+          helm package \
+            --app-version=${{ inputs.version }} \
+            --version=${{ inputs.version }} \
+            ./charts/${{ env.CHART_NAME }}
 
-      - name: Get version from Chart.yaml
-        id: chart_version
+      - name: Prepare release directory
         run: |
-          VERSION=$(yq e '.version' charts/app/Chart.yaml)
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          mkdir -p ./build
+          cp ./charts/${{ env.CHART_NAME }}-${{ inputs.version }}.tgz ./build/
+          cp ./replicated/*.yaml ./build/
 
-      - name: Build release artifacts
-        run: make build manifests charts
+      - name: Prepare API parameters
+        id: prepare-api
+        run: |
+          if [ -z "${{ inputs.slug }}" ]; then
+            echo "replicated-app=${{ secrets.REPLICATED_APP }}" >> $GITHUB_OUTPUT
+          else
+            echo "replicated-app=${{ inputs.slug }}" >> $GITHUB_OUTPUT
+          fi
 
-      - name: Lint release
-        run: make lint
+          if [ -z "${{ inputs.api-endpoint }}" ]; then
+            echo "api-endpoint=https://api.replicated.com/vendor" >> $GITHUB_OUTPUT
+          else
+            echo "api-endpoint=${{ inputs.api-endpoint }}" >> $GITHUB_OUTPUT
+          fi
+
+          if [ -z "${{ inputs.api-token }}" ]; then
+            echo "api-token=${{ secrets.REPLICATED_API_TOKEN }}" >> $GITHUB_OUTPUT
+          else
+            echo "api-token=${{ inputs.api-token }}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Create Replicated release
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            CHANNEL="${{ inputs.channel }}"
-          else
-            CHANNEL="Unstable"
-          fi
-          make release CHANNEL="$CHANNEL"
-        env:
-          REPLICATED_APP: ${{ secrets.REPLICATED_APP }}
-          REPLICATED_API_TOKEN: ${{ secrets.REPLICATED_API_TOKEN }}
+        uses: replicatedhq/action-kots-release@configurable-endpoint
+        with:
+          replicated-app: ${{ steps.prepare-api.outputs.replicated-app }}
+          replicated-api-token: ${{ steps.prepare-api.outputs.api-token }}
+          replicated-api-origin: ${{ steps.prepare-api.outputs.api-endpoint }}
+          yaml-dir: ./build
+          promote-channel: ${{ inputs.channel }}
+          version: ${{ inputs.version }}

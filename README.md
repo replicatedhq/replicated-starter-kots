@@ -13,24 +13,23 @@ This template replaces the legacy KOTS-focused starter with a modern Helm-centri
 
 ## Quick Start
 
-### Setup
-
-```bash
-# Install development dependencies
-./bin/setup.sh
-
-# Validate your changes
-make lint
-
-# Create a Replicated release
-make release
-```
-
 ### Environment Variables
 
 ```bash
 export REPLICATED_APP=your-app-slug
 export REPLICATED_API_TOKEN=your-api-token
+```
+
+### Validate Your Changes
+
+```bash
+make lint
+```
+
+### Create a Replicated Release
+
+```bash
+make release
 ```
 
 ## Repository Structure
@@ -45,9 +44,7 @@ export REPLICATED_API_TOKEN=your-api-token
 │   ├── sig-application.yaml  # Kubernetes Application CR
 │   └── embedded-cluster.yaml # Embedded cluster config
 ├── docs/                    # Customer-facing documentation
-├── bin/setup.sh            # Developer environment setup
 ├── Makefile                # Build and release automation
-├── script/                 # Linting and test scripts
 └── .github/workflows/      # CI/CD and issue automation
 ```
 

@@ -63,6 +63,10 @@ release: $(RELEASE_FILES)
 hooks:
 	git config core.hooksPath .githooks
 
+.PHONY: changelog
+changelog:
+	docker run --rm --platform linux/amd64 -v "$(PROJECTDIR):/data" mogensen/helm-changelog:latest
+
 .PHONY: clean
 clean:
 	rm -rf $(BUILDDIR)

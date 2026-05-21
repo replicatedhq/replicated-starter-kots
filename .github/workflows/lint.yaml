@@ -5,7 +5,6 @@ on:
     paths:
       - 'charts/**'
       - 'replicated/**'
-      - 'script/**'
       - 'Makefile'
   push:
     branches:
@@ -30,12 +29,3 @@ jobs:
           # Basic YAML validation
           yq e 'true' replicated/*.yaml > /dev/null
         if: hashFiles('replicated/*.yaml') != ''
-
-      - name: Run shellcheck on scripts
-        run: |
-          for script in bin/setup.sh script/*; do
-            if [ -f "$script" ] && head -1 "$script" | grep -q 'bash\|sh'; then
-              shellcheck "$script"
-            fi
-          done
-        continue-on-error: true

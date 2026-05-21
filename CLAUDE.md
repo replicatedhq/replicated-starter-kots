@@ -9,7 +9,6 @@ This is a Replicated collaboration repository. It uses Helm charts for applicati
 ├── charts/app/          # Helm chart for the application
 ├── replicated/          # Replicated-specific manifests
 ├── docs/               # Customer-facing documentation
-├── bin/setup.sh        # Developer environment setup
 ├── Makefile            # Build and release automation
 └── .github/workflows/  # CI/CD and issue automation
 ```

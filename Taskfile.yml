@@ -1,9 +1,0 @@
----
-version: '3'
-
-tasks:
-  changelog:
-    desc: Generate changelog for Helm chart
-    cmds:
-      - docker run --rm --platform linux/amd64 -v "$(pwd):/data" mogensen/helm-changelog:latest
-    silent: true
