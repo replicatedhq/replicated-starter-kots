@@ -1,0 +1,5 @@
+#!/bin/sh
+# Pre-commit hook: run lint checks
+# If you need to bypass this hook temporarily, use: git commit --no-verify
+
+npm run lint

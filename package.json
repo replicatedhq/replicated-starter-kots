@@ -1,0 +1,17 @@
+{
+  "name": "replicated-starter",
+  "version": "0.1.0",
+  "description": "Replicated application collaboration template",
+  "private": true,
+  "scripts": {
+    "lint": "script/lint-helm && script/lint-shellcheck && script/lint-editorconfig",
+    "test": "script/test",
+    "prepare": "husky install || true"
+  },
+  "devDependencies": {
+    "husky": "^9.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
