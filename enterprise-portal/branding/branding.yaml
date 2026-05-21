@@ -1,0 +1,19 @@
+title: "My Application"
+overview: |
+  Welcome to the Enterprise Portal for My Application.
+  This portal provides access to application releases, configuration, and support resources.
+
+supportPortalLink: "https://docs.example.com/support"
+contact: "support@example.com"
+
+# Colors (hex values)
+background: "#f8f9fa"
+backgroundImage: ""
+customColor1: "#0d6efd"
+customColor2: "#6c757d"
+primaryColor: "#0d6efd"
+secondaryColor: "#6c757d"
+
+# Assets (paths relative to this file)
+# logo: assets/logo.png
+# favicon: assets/favicon.png

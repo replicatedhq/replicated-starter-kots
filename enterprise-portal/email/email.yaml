@@ -1,0 +1,15 @@
+default_from_address: "noreply@example.com"
+
+templates:
+  - id: trial_signup
+    name: "Trial Signup"
+    subject: "Welcome to your trial"
+    body_file: templates/trial_signup.html
+  - id: password_reset
+    name: "Password Reset"
+    subject: "Reset your password"
+    body_file: templates/password_reset.html
+  - id: new_version
+    name: "New Version Available"
+    subject: "A new version is available"
+    body_file: templates/new_version.html
