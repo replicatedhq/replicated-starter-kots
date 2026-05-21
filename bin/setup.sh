@@ -66,18 +66,12 @@ install_helm_plugins() {
   fi
 }
 
-install_node_deps() {
-  if [ -f "${PROJECT_ROOT}/package.json" ]; then
-    if [ ! -d "${PROJECT_ROOT}/node_modules" ]; then
-      echo "Installing Node.js dependencies..."
-      if command -v npm >/dev/null 2>&1; then
-        npm install
-      else
-        echo "npm not found. Skipping Node.js dependencies."
-      fi
-    else
-      echo "Node.js dependencies already installed."
-    fi
+install_git_hooks() {
+  echo "Installing git hooks..."
+  if [ -f "${PROJECT_ROOT}/Makefile" ]; then
+    make hooks
+  else
+    echo "Makefile not found. Skipping git hooks installation."
   fi
 }
 
@@ -90,7 +84,7 @@ main() {
   install_homebrew || true
   install_dependencies
   install_helm_plugins
-  install_node_deps
+  install_git_hooks
 
   echo ""
   echo "Setup complete!"

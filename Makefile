@@ -59,6 +59,10 @@ release: $(RELEASE_FILES)
 		--ensure-channel \
 		--promote $(CHANNEL)
 
+.PHONY: hooks
+hooks:
+	git config core.hooksPath .githooks
+
 .PHONY: clean
 clean:
 	rm -rf $(BUILDDIR)

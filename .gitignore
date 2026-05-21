@@ -5,6 +5,3 @@
 # Build artifacts
 build/
 *.tgz
-
-# Dependencies
-node_modules/
