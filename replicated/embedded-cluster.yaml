@@ -1,0 +1,22 @@
+apiVersion: embeddedcluster.replicated.com/v1beta1
+kind: Config
+metadata:
+  name: app
+spec:
+  version: stable
+  roles:
+    controller:
+      name: controller
+      labels:
+        controller: "true"
+    custom:
+      - name: worker
+        labels:
+          worker: "true"
+  extensions:
+    helm:
+      - chartName: app
+        chartNamespace: app
+        # values: |
+        #   # Add custom Helm values here
+        #   replicaCount: 2

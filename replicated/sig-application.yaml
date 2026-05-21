@@ -1,0 +1,23 @@
+apiVersion: app.k8s.io/v1beta1
+kind: Application
+metadata:
+  name: app
+  labels:
+    app.kubernetes.io/name: app
+    app.kubernetes.io/instance: app
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: application
+    app.kubernetes.io/managed-by: Helm
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: app
+      app.kubernetes.io/instance: app
+  descriptor:
+    type: "application"
+    version: "1.0.0"
+    description: "A generic application deployed via Helm"
+    links:
+      - description: Application
+        url: "http://app"
+  addOwnerRef: true

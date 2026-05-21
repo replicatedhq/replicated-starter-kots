@@ -1,0 +1,14 @@
+apiVersion: kots.io/v1beta1
+kind: Application
+metadata:
+  name: app
+spec:
+  title: "My Application"
+  # icon: https://example.com/icon.png
+  statusInformers:
+    - deployment/app
+  ports:
+    - serviceName: app
+      servicePort: 80
+      localPort: 8080
+      applicationUrl: "http://app"

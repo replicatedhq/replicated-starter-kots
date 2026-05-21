@@ -1,0 +1,31 @@
+apiVersion: troubleshoot.sh/v1beta2
+kind: Preflight
+metadata:
+  name: app-preflight
+spec:
+  analyzers:
+    - clusterVersion:
+        outcomes:
+          - fail:
+              when: "< 1.22.0"
+              message: Your cluster version is too old. Please upgrade.
+          - pass:
+              message: Your cluster meets the required Kubernetes version.
+    - storageClass:
+        checkName: Required Storage Class
+        outcomes:
+          - fail:
+              message: No storage class found. Please install a storage class.
+          - pass:
+              message: A storage class is present.
+    - nodeResources:
+        checkName: Node Resources
+        outcomes:
+          - fail:
+              when: "sum(cpuAllocatable) < 1"
+              message: Your cluster does not have enough CPU resources. At least 1 CPU core is required.
+          - fail:
+              when: "sum(memoryAllocatable) < 2Gi"
+              message: Your cluster does not have enough memory. At least 2Gi of memory is required.
+          - pass:
+              message: Your cluster has sufficient CPU and memory resources.
