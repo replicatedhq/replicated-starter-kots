@@ -1,171 +1,88 @@
-Replicated Kubernetes Starter
-==================
+# Replicated Application Template
 
-Example project showcasing how power users can leverage the Replicated CLI Tools to manage kots YAMLs using a git repository.
+A modern, Helm-based template for Replicated application collaboration repositories.
 
-### Get started
+## Overview
 
-This repo is a [GitHub Template Repository](https://help.github.com/en/articles/creating-a-repository-from-a-template). You can create a private copy by using the "Use this Template" link in the repo:
+This repository serves two primary purposes:
 
-![Template Repo](https://help.github.com/assets/images/help/repository/use-this-template-button.png)
+1. **Release Management** - Engineers use this repo to build, lint, and publish Replicated releases
+2. **Support Collaboration** - Customer support tickets are tracked here with automated workflows
 
-You should use the template to create a new **private** repo in your org, for example `mycompany/kots-app` or `mycompany/replicated-starter-kots`.
+This template replaces the legacy KOTS-focused starter with a modern Helm-centric approach that aligns with current Replicated platform capabilities.
 
-Once you've created a repository from the template, you'll want to `git clone` your new repo and `cd` into it locally.
+## Quick Start
 
+### Setup
 
-#### Install CLI
+```bash
+# Install development dependencies
+./bin/setup.sh
 
-### 1. Install CLI
+# Validate your changes
+make lint
 
-To start, you'll want to install the `replicated` CLI.
-You can install with [homebrew](https://brew.sh) or grab the latest Linux or macOS version from [the replicatedhq/replicated releases page](https://github.com/replicatedhq/replicated/releases).
-
-##### Brew
-
-```shell script
-brew install replicatedhq/replicated/cli
+# Create a Replicated release
+make release
 ```
 
-##### Manual
+### Environment Variables
 
-###### Linux
-
-```shell script
-curl -s https://api.github.com/repos/replicatedhq/replicated/releases/latest \
-           | grep "browser_download_url.*$(uname | tr '[:upper:]' '[:lower:]')_amd64.tar.gz" \
-           | cut -d : -f 2,3 \
-           | tr -d \" \
-           | cat <( echo -n "url") - \
-           | curl -fsSL -K- \
-           | tar xvz replicated
+```bash
+export REPLICATED_APP=your-app-slug
+export REPLICATED_API_TOKEN=your-api-token
 ```
 
-##### Mac
-
-
-```shell script
-curl -s https://api.github.com/repos/replicatedhq/replicated/releases/latest \
-           | grep "browser_download_url.*$(uname | tr '[:upper:]' '[:lower:]')_all.tar.gz" \
-           | cut -d : -f 2,3 \
-           | tr -d \" \
-           | cat <( echo -n "url") - \
-           | curl -fsSL -K- \
-           | tar xvz replicated
-```
-
-Then move `./replicated` to somewhere in your `PATH`:
-
-
-```shell script
-mv replicated /usr/local/bin/
-```
-
-##### Verifying
-
-You can verify it's installed with `replicated version`:
-
-```text
-$ replicated version
-```
-```json
-{
-  "version": "0.31.0",
-  "git": "c67210a",
-  "buildTime": "2020-09-03T18:31:11Z",
-  "go": {
-      "version": "go1.14.7",
-      "compiler": "gc",
-      "os": "darwin",
-      "arch": "amd64"
-  }
-}
-```
-
-
-#### Configure environment
-
-You'll need to set up two environment variables to interact with vendor.replicated.com:
+## Repository Structure
 
 ```
-export REPLICATED_APP=...
-export REPLICATED_API_TOKEN=...
+.
+├── charts/app/              # Helm chart for your application
+├── replicated/              # Replicated manifests
+│   ├── application.yaml     # App metadata and status informers
+│   ├── config.yaml          # Config options for admin console
+│   ├── preflight.yaml       # Pre-installation checks
+│   ├── sig-application.yaml  # Kubernetes Application CR
+│   └── embedded-cluster.yaml # Embedded cluster config
+├── docs/                    # Customer-facing documentation
+├── bin/setup.sh            # Developer environment setup
+├── Makefile                # Build and release automation
+├── script/                 # Linting and test scripts
+└── .github/workflows/      # CI/CD and issue automation
 ```
 
-`REPLICATED_APP` should be set to the app slug from the Settings page:
+## Release Workflow
 
-<p align="center"><img src="./doc/REPLICATED_APP.png" width=600></img></p>
+1. Update application code in `charts/app/`
+2. Bump version in `charts/app/Chart.yaml`
+3. Run `make lint` to validate
+4. Run `make release` to publish
 
-Next, create a Service Account API token from the vendor portal under [Service Accounts](https://vendor.replicated.com/team/serviceaccounts):
+The release is promoted to a channel matching your current git branch (or `Unstable` for `main`).
 
-<p align="center"><img src="./doc/REPLICATED_API_TOKEN.png" width=600></img></p>
+## Support Ticket Management
 
-Ensure the token has the appropriate "Write" access in the selected [RBAC policy](https://vendor.replicated.com/team/policies) or you'll be unable create new releases. Once you have the values,
-set them in your environment.
+This repository includes GitHub issue automation for support workflows:
 
-```
-export REPLICATED_APP=...
-export REPLICATED_API_TOKEN=...
-```
+- **Issue Templates** - Structured support requests with environment details
+- **Stale Issue Management** - Automatically flags and closes inactive issues
+- **Slash Commands** - `/close`, `/label <name>` in issue comments
+- **Status Tracking** - `status::*` labels track issue lifecycle
 
-You can ensure this is working with
+See [`.github/ISSUE_TEMPLATE/issue.md`](.github/ISSUE_TEMPLATE/issue.md) for the support request template.
 
-```
-replicated release ls
-```
+## Customer Installation
 
-#### Iterating on your release
+For customer-facing installation instructions, see [`docs/README.md`](docs/README.md).
 
-Once you've made changes to your manifests, lint them with
+## Agent Support
 
-```
-replicated release lint --yaml-dir=manifests
-```
+This repository includes [`CLAUDE.md`](CLAUDE.md) with context for AI agents working on:
+- Replicated manifest modifications
+- Helm chart updates
+- Release management
+- Support ticket workflows
 
-You can push a new release to a channel with
+## Legacy KOTS Template
 
-```
-replicated release create --auto
-```
-
-By default the `Unstable` channel will be used. You can override this with the `--promote` flag:
-
-```
-replicated release create --auto --promote=Beta
-```
-
-
-### Integrating with GitHub
-
-This repo contains a [GitHub Actions](https://help.github.com/en/github/automating-your-workflow-with-github-actions/about-github-actions) workflow for ci at [./.github/workflows/main.yml](./.github/workflows/main.yml). You'll need to [configure secrets](https://help.github.com/en/github/automating-your-workflow-with-github-actions/virtual-environments-for-github-actions#creating-and-using-secrets-encrypted-variables) for `REPLICATED_APP` and `REPLICATED_API_TOKEN`. On every push this will:
-
-- Ensure a channel exists for the branch that was pushed to
-- Create a release based on the contents of `./manifests`
-
-### Integration with GitLab
-
-This repo contains GitLab CI configuration [.gitlab-ci.yaml](./gitlab-ci.yml). The configuration requires a `REPLICATED_APP` and `REPLICATED_API_TOKEN` variables set outside of the configuration using [GitLab CI/CD Variables](https://docs.gitlab.com/ee/ci/variables/#define-a-cicd-variable-in-the-ui)
-
-The pipeline in the example configuration:
-
-- Prints out variables. *This stem must be used only for debug purposes and removed for pdouction.*
-- Creates replicated release
-- Creates kURL installer release based on the [./kurl-installer.yaml](./kurl-installer.yaml) spec
-
-## Advanced Usage
-
-### Integrating kurl installer yaml
-
-There is a file `kurl-installer.yaml` that can be used to manage [kurl.sh](https://kurl.sh) installer versions for an embedded Kubernetes cluster. This will be automatically released in CI. You can create a release manually with
-
-```
-replicated installer create --auto
-```
-
-### Tools reference
-
-- [replicated vendor cli](https://github.com/replicatedhq/replicated)
-
-### License
-
-MIT
+The previous KOTS-focused version of this template is preserved at tag `legacy/kots-template`.
