@@ -1,0 +1,30 @@
+name: Trigger Followups
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_numbers:
+        description: 'Comma-separated issue numbers to follow up on'
+        required: true
+        type: string
+
+jobs:
+  followup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Process followups
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const issueNumbers = String('${{ github.event.inputs.issue_numbers }}')
+              .split(',')
+              .map(s => parseInt(s.trim(), 10))
+              .filter(n => Number.isInteger(n) && n > 0);
+
+            console.log('Processing followups for issues:', issueNumbers);
+
+            for (const issueNumber of issueNumbers) {
+              console.log(`Checking issue #${issueNumber} for follow-up status`);
+              // Add your follow-up logic here (e.g., send notification, create task)
+            }

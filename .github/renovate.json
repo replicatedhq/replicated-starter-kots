@@ -1,0 +1,16 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "helm-values": {
+    "fileMatch": ["charts/.+/values\\.yaml$"]
+  },
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["^helm-chart-"],
+      "groupName": "helm chart dependencies",
+      "schedule": ["before 9am on monday"]
+    }
+  ]
+}

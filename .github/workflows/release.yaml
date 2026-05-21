@@ -1,0 +1,48 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: 'Channel to promote release to'
+        required: true
+        default: 'Unstable'
+        type: string
+  push:
+    branches:
+      - main
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || vars.ENABLE_AUTO_RELEASE == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up environment
+        run: |
+          echo "REPLICATED_APP=${{ secrets.REPLICATED_APP }}" >> $GITHUB_ENV
+
+      - name: Get version from Chart.yaml
+        id: chart_version
+        run: |
+          VERSION=$(yq e '.version' charts/app/Chart.yaml)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build release artifacts
+        run: make build manifests charts
+
+      - name: Lint release
+        run: make lint
+
+      - name: Create Replicated release
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            CHANNEL="${{ inputs.channel }}"
+          else
+            CHANNEL="Unstable"
+          fi
+          make release CHANNEL="$CHANNEL"
+        env:
+          REPLICATED_APP: ${{ secrets.REPLICATED_APP }}
+          REPLICATED_API_TOKEN: ${{ secrets.REPLICATED_API_TOKEN }}

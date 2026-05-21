@@ -1,0 +1,51 @@
+name: Trigger Analysis
+
+on:
+  issues:
+    types: [opened]
+  issue_comment:
+    types: [created]
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    if: contains(github.event.issue.labels.*.name, 'kind::support-request')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract support bundle URL
+        id: extract
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const body = context.payload.issue?.body || '';
+            const comment = context.payload.comment?.body || '';
+            const text = body + '\n' + comment;
+
+            // Look for common support bundle URL patterns
+            const patterns = [
+              /https?:\/\/[^\s\)\]\>]+\.(?:tar\.gz|tgz|zip|bundle)/gi,
+              /https?:\/\/[^\s\)\]\>]+\/(?:support|bundle|download|troubleshoot)\/[^\s\)\]\>]+/gi,
+            ];
+
+            let urls = [];
+            for (const pattern of patterns) {
+              const matches = text.match(pattern);
+              if (matches) {
+                urls.push(...matches);
+              }
+            }
+
+            if (urls.length > 0) {
+              core.setOutput('bundle_urls', JSON.stringify(urls));
+              core.setOutput('has_bundle', 'true');
+              console.log('Found bundle URLs:', urls);
+            } else {
+              core.setOutput('has_bundle', 'false');
+            }
+
+      - name: Log analysis trigger
+        if: steps.extract.outputs.has_bundle == 'true'
+        run: |
+          echo "Support bundle detected. Analysis would be triggered here."
+          echo "Bundle URLs: ${{ steps.extract.outputs.bundle_urls }}"
+        # Replace this with your actual analysis workflow dispatch or integration
