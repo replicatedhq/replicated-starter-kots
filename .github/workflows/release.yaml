@@ -1,32 +1,17 @@
 name: Release
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: Release Version
-        required: true
-        type: string
-      channel:
-        description: Channel to promote
-        required: true
-        default: Unstable
-        type: string
-      slug:
-        description: Replicated App Slug
-        required: false
-        type: string
-      api-endpoint:
-        description: Replicated API Endpoint
-        required: false
-        type: string
-      api-token:
-        description: Replicated API Token
-        required: false
-        type: string
-
-env:
-  CHART_NAME: app
+  push:
+    branches:
+      - '**'
+    tags:
+      - 'v*.*.*'
+    paths:
+      - 'charts/**'
+      - 'replicated/**'
+      - '!**.md'
+      - '!docs/**'
+      - '!.github/**'
 
 jobs:
   release:
@@ -39,46 +24,51 @@ jobs:
         with:
           version: v3.15.0
 
+      - name: Determine channel and version
+        id: meta
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            # Tags: channel = tag name, version = tag name (strip v prefix)
+            CHANNEL="${{ github.ref_name }}"
+            VERSION="${{ github.ref_name }}"
+            # Strip leading 'v' if present for semantic version
+            VERSION="${VERSION#v}"
+          else
+            # Branches: channel = branch name (sanitize), version = branch + sha
+            BRANCH="${{ github.ref_name }}"
+            # Sanitize: replace slashes and special chars for channel names
+            CHANNEL="${BRANCH//\//-}"
+            # Default main branch to Unstable channel
+            if [[ "$CHANNEL" == "main" ]]; then
+              CHANNEL="Unstable"
+            fi
+            SHORT_SHA="${{ github.sha }}"
+            SHORT_SHA="${SHORT_SHA::7}"
+            VERSION="${CHANNEL}-${SHORT_SHA}"
+          fi
+
+          echo "channel=$CHANNEL" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Building version $VERSION for channel $CHANNEL"
+
       - name: Package Helm chart
         run: |
           helm package \
-            --app-version=${{ inputs.version }} \
-            --version=${{ inputs.version }} \
-            ./charts/${{ env.CHART_NAME }}
+            --app-version="${{ steps.meta.outputs.version }}" \
+            --version="${{ steps.meta.outputs.version }}" \
+            ./charts/app
 
-      - name: Prepare release directory
+      - name: Stage release artifacts
         run: |
           mkdir -p ./build
-          cp ./charts/${{ env.CHART_NAME }}-${{ inputs.version }}.tgz ./build/
+          cp ./charts/app-${{ steps.meta.outputs.version }}.tgz ./build/
           cp ./replicated/*.yaml ./build/
 
-      - name: Prepare API parameters
-        id: prepare-api
-        run: |
-          if [ -z "${{ inputs.slug }}" ]; then
-            echo "replicated-app=${{ secrets.REPLICATED_APP }}" >> $GITHUB_OUTPUT
-          else
-            echo "replicated-app=${{ inputs.slug }}" >> $GITHUB_OUTPUT
-          fi
-
-          if [ -z "${{ inputs.api-endpoint }}" ]; then
-            echo "api-endpoint=https://api.replicated.com/vendor" >> $GITHUB_OUTPUT
-          else
-            echo "api-endpoint=${{ inputs.api-endpoint }}" >> $GITHUB_OUTPUT
-          fi
-
-          if [ -z "${{ inputs.api-token }}" ]; then
-            echo "api-token=${{ secrets.REPLICATED_API_TOKEN }}" >> $GITHUB_OUTPUT
-          else
-            echo "api-token=${{ inputs.api-token }}" >> $GITHUB_OUTPUT
-          fi
-
       - name: Create Replicated release
-        uses: replicatedhq/action-kots-release@configurable-endpoint
+        uses: replicatedhq/replicated-actions/create-release@v1
         with:
-          replicated-app: ${{ steps.prepare-api.outputs.replicated-app }}
-          replicated-api-token: ${{ steps.prepare-api.outputs.api-token }}
-          replicated-api-origin: ${{ steps.prepare-api.outputs.api-endpoint }}
+          app-slug: ${{ secrets.REPLICATED_APP }}
+          api-token: ${{ secrets.REPLICATED_API_TOKEN }}
           yaml-dir: ./build
-          promote-channel: ${{ inputs.channel }}
-          version: ${{ inputs.version }}
+          promote-channel: ${{ steps.meta.outputs.channel }}
+          version: ${{ steps.meta.outputs.version }}
