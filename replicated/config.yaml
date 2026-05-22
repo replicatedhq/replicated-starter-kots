@@ -1,0 +1,23 @@
+apiVersion: kots.io/v1beta1
+kind: Config
+metadata:
+  name: app
+spec:
+  groups:
+    - name: app_config
+      title: Application Configuration
+      description: Basic configuration for the application
+      items:
+        - name: app_name
+          title: Application Name
+          type: text
+          default: "My Application"
+          required: true
+        - name: admin_password
+          title: Admin Password
+          type: password
+          required: true
+        - name: enable_feature
+          title: Enable Premium Feature
+          type: bool
+          default: "0"

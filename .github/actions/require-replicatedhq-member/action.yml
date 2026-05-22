@@ -1,0 +1,38 @@
+name: 'Require ReplicatedHQ Member'
+description: 'Check if the GitHub actor is a public member of the replicatedhq organization'
+inputs:
+  allow-collab-bot:
+    description: 'Whether to allow the replicated-collab-bot'
+    required: false
+    default: 'false'
+runs:
+  using: 'composite'
+  steps:
+    - name: Check membership
+      uses: actions/github-script@v8
+      with:
+        script: |
+          const actor = context.actor;
+
+          // Optionally allow the collab bot
+          if ('${{ inputs.allow-collab-bot }}' === 'true' && actor === 'replicated-collab-bot') {
+            console.log('Actor is the collab bot, allowing.');
+            return;
+          }
+
+          try {
+            const response = await github.rest.orgs.checkPublicMembershipForUser({
+              org: 'replicatedhq',
+              username: actor
+            });
+            if (response.status === 204) {
+              console.log(`User ${actor} is a public member of replicatedhq`);
+              return;
+            }
+          } catch (error) {
+            if (error.status === 404) {
+              core.setFailed(`User ${actor} is not a public member of the replicatedhq organization`);
+              return;
+            }
+            throw error;
+          }

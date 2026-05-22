@@ -1,0 +1,6 @@
+#!/bin/sh
+# Pre-commit hook: run basic lint checks
+# For full validation (including Replicated manifests), run: make lint
+# If you need to bypass this hook temporarily, use: git commit --no-verify
+
+make lint-helm

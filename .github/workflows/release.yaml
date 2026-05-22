@@ -1,0 +1,74 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - 'v*.*.*'
+    paths:
+      - 'charts/**'
+      - 'replicated/**'
+      - '!**.md'
+      - '!docs/**'
+      - '!.github/**'
+
+jobs:
+  release:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.15.0
+
+      - name: Determine channel and version
+        id: meta
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            # Tags: channel = tag name, version = tag name (strip v prefix)
+            CHANNEL="${{ github.ref_name }}"
+            VERSION="${{ github.ref_name }}"
+            # Strip leading 'v' if present for semantic version
+            VERSION="${VERSION#v}"
+          else
+            # Branches: channel = branch name (sanitize), version = branch + sha
+            BRANCH="${{ github.ref_name }}"
+            # Sanitize: replace slashes and special chars for channel names
+            CHANNEL="${BRANCH//\//-}"
+            # Default main branch to Unstable channel
+            if [[ "$CHANNEL" == "main" ]]; then
+              CHANNEL="Unstable"
+            fi
+            SHORT_SHA="${{ github.sha }}"
+            SHORT_SHA="${SHORT_SHA::7}"
+            VERSION="${CHANNEL}-${SHORT_SHA}"
+          fi
+
+          echo "channel=$CHANNEL" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Building version $VERSION for channel $CHANNEL"
+
+      - name: Package Helm chart
+        run: |
+          helm package \
+            --app-version="${{ steps.meta.outputs.version }}" \
+            --version="${{ steps.meta.outputs.version }}" \
+            ./charts/app
+
+      - name: Stage release artifacts
+        run: |
+          mkdir -p ./build
+          cp ./charts/app-${{ steps.meta.outputs.version }}.tgz ./build/
+          cp ./replicated/*.yaml ./build/
+
+      - name: Create Replicated release
+        uses: replicatedhq/replicated-actions/create-release@v1
+        with:
+          app-slug: ${{ secrets.REPLICATED_APP }}
+          api-token: ${{ secrets.REPLICATED_API_TOKEN }}
+          yaml-dir: ./build
+          promote-channel: ${{ steps.meta.outputs.channel }}
+          version: ${{ steps.meta.outputs.version }}

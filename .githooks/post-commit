@@ -1,0 +1,3 @@
+#!/bin/sh
+# Post-commit hook
+# Add any post-commit actions here (e.g., notifications, changelog updates)

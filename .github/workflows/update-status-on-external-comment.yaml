@@ -1,0 +1,53 @@
+name: Update Status on External Comment
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  update-status:
+    runs-on: ubuntu-latest
+    if: github.event.issue.state == 'open' && !contains(github.event.comment.user.login, '[bot]')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update issue status
+        uses: actions/github-script@v8
+        with:
+          script: |
+            // Update status when a customer or external party comments
+            const labels = context.payload.issue.labels.map(l => l.name);
+
+            // If issue is stale/closed status, reopen to active status
+            if (labels.includes('status::stale') || labels.includes('status::closed')) {
+              const { data: current } = await github.rest.issues.listLabelsOnIssue({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.issue.number
+              });
+
+              const toRemove = current
+                .map(l => l.name)
+                .filter(name => name.startsWith('status::'));
+
+              for (const name of toRemove) {
+                try {
+                  await github.rest.issues.removeLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.payload.issue.number,
+                    name
+                  });
+                } catch (e) {
+                  console.log('Could not remove label ' + name + ': ' + e.message);
+                }
+              }
+
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.issue.number,
+                labels: ['status::active']
+              });
+
+              console.log('Updated issue #' + context.payload.issue.number + ' to status::active');
+            }
